@@ -53,6 +53,14 @@ export default function Home() {
           <span>R$ 79,90</span>
         </footer>
       </Product>
+      <Product className='keen-slider__slide' >
+        <Image src={camiseta3} width={520} height={480} alt='' />
+
+        <footer>
+          <strong>Camiseta x</strong>
+          <span>R$ 79,90</span>
+        </footer>
+      </Product>
     </HomeContainer>
   );
 }
