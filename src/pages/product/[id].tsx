@@ -41,8 +41,6 @@ export default function Product( { product }:ProducProps) {
   if (isFallback) {
     return <p>loading</p>;
   }
-
-
   return (
     <ProductContainer>
       <ImageContainer>
@@ -70,7 +68,7 @@ export default function Product( { product }:ProducProps) {
 export const getStaticPaths: GetStaticPaths = async () => {
   return {
     paths: [
-      { params: { id: []}}
+      { params: { id: 'prod_N7U6WPD5Ddf06H'}}
     ],
     fallback: true,
   };
