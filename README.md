@@ -1,7 +1,7 @@
 # 🛍️ IShop  
 
 <p align="center">
-  <img src="assets/ishop-logo.png" alt="IShop Logo" height="100"/>
+  <img src="src/assets/Logo.png" alt="IShop Logo" height="100"/>
 </p>
 
 ---
