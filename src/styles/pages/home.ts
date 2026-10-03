@@ -66,3 +66,11 @@ export const Product = styled('a', {
   }
 
 });
+
+export const DemoNotice = styled('p', {
+  margin: '0 auto 1rem',
+  maxWidth: 1180,
+  fontSize: '$md',
+  color: '$gray300',
+  textAlign: 'center',
+});

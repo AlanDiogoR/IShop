@@ -6,6 +6,7 @@ import Stripe from 'stripe';
 import { stripe } from '../../lib/stripe';
 import { ImageContainer, ProductContainer, ProductDetails } from '../../styles/pages/product';
 import { useState } from 'react';
+import { getFallbackProduct, isDemoId, isFallbackEnabled } from '../../lib/fallbackProducts';
 
 interface ProducProps {
   product: {
@@ -14,7 +15,8 @@ interface ProducProps {
     imageUrl: string,
     price: string,
     description: string,
-    defaultPriceId: string,
+    defaultPriceId: string | null,
+    isDemo?: boolean,
   }
 }
 
@@ -22,6 +24,7 @@ export default function Product( { product }:ProducProps) {
   const [isCreatingCheckoutSession, setIsCreatingCheckoutSession] = useState(false);
 
   async function handleBuyProduct() {
+    if (product.isDemo || !product.defaultPriceId) return;
     try {
       setIsCreatingCheckoutSession(true);
       const response = await axios.post('/api/checkout', {
@@ -55,8 +58,12 @@ export default function Product( { product }:ProducProps) {
         <span>{product.price}</span>
         <p>{product.description}</p>
 
-        <button disabled={isCreatingCheckoutSession} onClick={handleBuyProduct}>
-          Comprar agora
+        {product.isDemo && (
+          <p role='status'><small>Catálogo de demonstração — produto de exemplo, não está à venda.</small></p>
+        )}
+
+        <button disabled={isCreatingCheckoutSession || product.isDemo} onClick={handleBuyProduct}>
+          {product.isDemo ? 'Indisponível (demo)' : 'Comprar agora'}
         </button>
       </ProductDetails>
     </ProductContainer>
@@ -72,6 +79,13 @@ export const getStaticPaths: GetStaticPaths = async () => {
 
 export const getStaticProps: GetStaticProps = async ({ params }) => {
   const productId = String(params.id);
+
+  // Itens de demonstracao nunca consultam o Stripe (so com a flag ligada).
+  if (isDemoId(productId)) {
+    const demo = isFallbackEnabled() ? getFallbackProduct(productId) : null;
+    if (!demo) return { notFound: true };
+    return { props: { product: demo }, revalidate: 60 };
+  }
 
   const product = await stripe.products.retrieve(productId, {
     expand: ['default_price'],

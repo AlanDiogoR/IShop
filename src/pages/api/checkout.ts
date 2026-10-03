@@ -11,6 +11,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   if(!priceId) {
     return res.status(400).json({ error: 'Price not found'});
   }
+  // Itens de demonstracao (ou qualquer id que nao seja um Price do Stripe) nunca geram sessao.
+  if(typeof priceId !== 'string' || !priceId.startsWith('price_')) {
+    return res.status(400).json({ error: 'Invalid price (demo items cannot be purchased)'});
+  }
   const successUrl = `${process.env.NEXT_URL}/success`;
   const cancelUrl = `${process.env.NEXT_URL}/`;
 
