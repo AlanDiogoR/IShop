@@ -1,62 +1,71 @@
-# 🛍️ IShop  
+# IShop
 
 <p align="center">
-  <img src="src/assets/Logo.png" alt="IShop Logo" height="100"/>
+  <img src="src/assets/Logo.png" alt="Logo IShop" height="100"/>
 </p>
 
----
+Loja virtual de camisetas feita em **Next.js** com o **Stripe** como backend: os produtos e preços vêm da conta Stripe e a compra é concluída no Stripe Checkout. Projeto de estudo com foco em geração estática (SSG/ISR) e integração com pagamento.
 
-## 📖 Sobre o Projeto  
+## Stack
 
-O **IShop** é um **e-commerce completo** desenvolvido como projeto prático para aplicar conceitos de **desenvolvimento web moderno**.  
-A aplicação integra **back-end, banco de dados não relacional e front-end** em um fluxo otimizado, com foco em **performance e experiência do usuário**.  
+- **Next.js 13** (Pages Router, SSG + ISR, API Routes) com **React 18** e **TypeScript**
+- **Stripe** (SDK Node) para catálogo de produtos/preços e sessões de checkout
+- **Stitches** (CSS-in-JS) e `@next/font`
+- **Keen Slider** para o carrossel de produtos
+- **Axios** e **ESLint**
 
----
+Não há banco de dados: o Stripe é a única fonte de dados.
 
-## 🚀 Funcionalidades  
+## Funcionalidades
 
-- 🛒 Cadastro e gerenciamento de produtos  
-- 👤 Autenticação e cadastro de usuários  
-- 📦 Carrinho de compras dinâmico  
-- 💳 Integração com métodos de pagamento (em implementação)  
-- 🔎 Busca e filtros otimizados para produtos  
-- 📱 Layout responsivo  
+Verificadas em `src/pages` e `src/lib`:
 
----
+- **Home com carrossel de produtos** carregados do Stripe no build (`getStaticProps`), com revalidação a cada 2 horas
+- **Página de produto** com rotas dinâmicas (`getStaticPaths` com `fallback: 'blocking'`), revalidada a cada 1 hora, exibindo nome, preço formatado em reais, descrição e imagem
+- **Compra via Stripe Checkout:** a API Route `POST /api/checkout` valida o `priceId` (só aceita ids `price_*`), cria a sessão de pagamento e redireciona o usuário
+- **Página de sucesso** após o pagamento
+- **Catálogo de demonstração opcional:** com `NEXT_PUBLIC_USE_FALLBACK_PRODUCTS=true`, se o Stripe vier vazio ou com erro, a loja mostra produtos de exemplo identificados como demo e não compráveis, revalidando a cada 1 minuto para voltar ao Stripe
 
-## 🛠️ Tecnologias Utilizadas  
+## Como rodar
 
-### ⚙️ Back-end & APIs  
-![Node.js](https://img.shields.io/badge/Node.js-339933?style=for-the-badge&logo=node.js&logoColor=white)
-![Express.js](https://img.shields.io/badge/Express-000000?style=for-the-badge&logo=express&logoColor=white)
-![REST API](https://img.shields.io/badge/REST-02569B?style=for-the-badge&logo=rest&logoColor=white)
+Requisitos: Node.js 18+ (testado com Node 20) e uma conta Stripe com produtos cadastrados (com imagem e preço).
 
-### 🗄️ Banco de Dados  
-![MongoDB](https://img.shields.io/badge/MongoDB-47A248?style=for-the-badge&logo=mongodb&logoColor=white)
+```bash
+npm ci
+cp .env.example .env.local   # preencha as variáveis abaixo
+npm run dev                  # http://localhost:3000
+```
 
-### 🎨 Front-end  
-![React](https://img.shields.io/badge/React-61DAFB?style=for-the-badge&logo=react&logoColor=black)
-![Next.js](https://img.shields.io/badge/Next.js-000000?style=for-the-badge&logo=nextdotjs&logoColor=white)
-![Styled Components](https://img.shields.io/badge/Styled--Components-DB7093?style=for-the-badge&logo=styledcomponents&logoColor=white)
+Produção:
 
-### 🛠️ Outros Recursos  
-![Git](https://img.shields.io/badge/Git-F05032?style=for-the-badge&logo=git&logoColor=white)
-![GitHub](https://img.shields.io/badge/GitHub-181717?style=for-the-badge&logo=github&logoColor=white)
+```bash
+npm run build   # requer chave Stripe válida: a home busca os produtos no build
+npm start
+```
 
----
+### Variáveis de ambiente
 
-## 📂 Estrutura do Projeto  
+Definidas em `.env.example`:
 
-IShop/  
-│── backend/   → API REST com Node.js e MongoDB  
-│── frontend/  → Aplicação em Next.js  
-│── assets/    → Recursos estáticos (imagens, ícones, etc.)  
+| Variável | Uso |
+|---|---|
+| `SRTIPE_SECRET_KEY` | Chave secreta do Stripe (o nome tem um erro de digitação no código e deve ser mantido assim) |
+| `NEXT_URL` | URL pública da aplicação, usada nos redirecionamentos de sucesso/cancelamento do checkout |
+| `NEXT_PUBLIC_USE_FALLBACK_PRODUCTS` | Opcional. `true` ativa o catálogo de demonstração |
 
----
+Para rodar em uma VM (bind em `0.0.0.0`, porta e detalhes do fallback), veja [RODAR.md](RODAR.md).
 
-## ▶️ Como Executar  
+## Estrutura
 
-1. Clone o repositório:  
-   ```bash
-   git clone https://github.com/AlanDiogoR/IShop.git
-   cd IShop
+```
+src/
+├── pages/
+│   ├── index.tsx          # Home com carrossel (SSG/ISR)
+│   ├── product/[id].tsx   # Página de produto (SSG/ISR)
+│   ├── success.tsx        # Retorno do checkout
+│   └── api/checkout.ts    # Cria a sessão no Stripe Checkout
+├── lib/
+│   ├── stripe.ts          # Cliente Stripe
+│   └── fallbackProducts.ts# Catálogo de demonstração opcional
+└── styles/                # Stitches (tema e estilos por página)
+```
